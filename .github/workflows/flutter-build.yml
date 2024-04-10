@@ -2206,6 +2206,29 @@ jobs:
           cp ../web/README.md web
           # TODO: Remove the following line when the web is almost complete.
           echo -e "\n\nThis build is for preview and not full functionality." >> web/README.md
+          popd
+
+      - name: Replace canvaskit in file
+        run: |
+          pushd flutter/build/web/
+          sed -i 's|https://www.gstatic.com/flutter-canvaskit/\w*/|canvaskit/|g' ./main.dart.js
+          sed -i 's|chromium/canvaskit|canvaskit|g' ./main.dart.js
+          popd
+      - name: Replace RENDEZVOUS_SERVER in file
+        if: env.RENDEZVOUS_SERVER != null
+        run: |
+          regStr='s/rs\-sg\.rustdesk\.com\"\,\"rs\-cn\.rustdesk\.com\"\,\"rs\-us\.rustdesk\.com/'${{ env.RENDEZVOUS_SERVER }}'/g'
+          sed -i $regStr flutter/build/web/js/dist/index.js
+      
+      - name: Replace RS_PUB_KEY in file
+        if: env.RS_PUB_KEY != null
+        run: |
+          regStr='s/OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=/'${{ env.RS_PUB_KEY }}'/g'
+          sed -i $regStr flutter/build/web/js/dist/index.js
+      
+      - name: Archive web
+        run: |
+          pushd flutter/build
           dir_name="rustdesk-${{ env.VERSION }}-${{ env.RELEASE_NAME }}"
           mv web "${dir_name}" && tar czf "${dir_name}".tar.gz "${dir_name}"
           sha256sum "${dir_name}".tar.gz

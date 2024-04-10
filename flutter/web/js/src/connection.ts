@@ -14,7 +14,7 @@ const HOSTS = [
   "rs-us.rustdesk.com",
 ];
 let HOST = localStorage.getItem("rendezvous-server") || HOSTS[0];
-const SCHEMA = "ws://";
+const SCHEMA = document.location.protocol == "https:" ? "wss://":"ws://";
 
 type MsgboxCallback = (type: string, title: string, text: string, link: string) => void;
 type DrawCallback = (display: number, data: Uint8Array) => void;
@@ -1035,6 +1035,11 @@ function getrUriFromRs(
     uri = tmp[0] + ":" + (port + (isRelay ? roffset || 3 : 2));
   } else {
     uri += ":" + (PORT + (isRelay ? 3 : 2));
+  }
+  if(SCHEMA == "wss://")
+  {
+    uri = uri.replace("21119", "21113");
+    uri = uri.replace("21118", "21112");
   }
   return SCHEMA + uri;
 }
