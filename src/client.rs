@@ -320,7 +320,7 @@ impl Client {
 
         if !key.is_empty() && !token.is_empty() {
             // mainly for the security of token
-            allow_err!(secure_tcp(&mut socket, key).await);
+            //allow_err!(secure_tcp(&mut socket, key).await);
         }
 
         let start = std::time::Instant::now();
