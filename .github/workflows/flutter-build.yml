@@ -528,7 +528,36 @@ jobs:
           pushd flutter
           # flutter build ipa --release --obfuscate --split-debug-info=./split-debug-info --no-codesign
           # for easy debugging
-          flutter build ipa --release --no-codesign
+          flutter build ios --release --no-codesign
+
+      - name: Generate rustdesk ipa
+        if: env.UPLOAD_ARTIFACT == 'true'
+        run: |
+          (cd flutter/build/ios/iphoneos && \
+          mkdir Payload && \
+          mv Runner.app/ Payload && \
+          zip -qq -r -9 rustdesk.ipa Payload)
+
+      - name: Generate rustdesk ipa
+        if: env.UPLOAD_ARTIFACT == 'true'
+        run: |
+          mv flutter/build/ios/iphoneos/rustdesk.ipa rustdesk-${{ env.VERSION }}-aarch64-unsigned.ipa
+
+      - name: Upload unsigned iOS ipa
+        if: env.UPLOAD_ARTIFACT == 'true'
+        uses: actions/upload-artifact@master
+        with:
+          name: rustdesk-unsigned-ios-aarch64
+          path: rustdesk-${{ env.VERSION }}-aarch64-unsigned.ipa
+
+      - name: Publish ipa package
+        if: env.UPLOAD_ARTIFACT == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          prerelease: true
+          tag_name: ${{ env.TAG_NAME }}
+          files: |
+            rustdesk-${{ env.VERSION }}-aarch64-unsigned.ipa
 
       # - name: Upload Artifacts
       #   # if: env.ANDROID_SIGNING_KEY != null && env.UPLOAD_ARTIFACT == 'true'
