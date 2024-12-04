@@ -2148,7 +2148,7 @@ jobs:
       - name: Replace google fonts in file
         if: env.FONTS_GSTATIC_URL != null
         run: |
-          regStr='s/https\:\/\/fonts\.gstatic\.com/'${{ env.FONTS_GSTATIC_URL }}'/g'
+          regStr='s/fonts\.gstatic\.com/${{ env.FONTS_GSTATIC_URL }}/g'
           sed -i $regStr flutter/build/web/main.dart.js
       
       - name: Archive web
