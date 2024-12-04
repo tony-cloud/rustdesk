@@ -2128,7 +2128,6 @@ jobs:
           #flutter build web --release
           flutter build web --release --dart-define=FLUTTER_WEB_CANVASKIT_URL=./canvaskit/ --web-renderer canvaskit --base-href=/webui/
           cd build
-          cp ../web/README.md web
           # TODO: Remove the following line when the web is almost complete.
           echo -e "\n\nThis build is for preview and not full functionality." >> web/README.md
           popd
