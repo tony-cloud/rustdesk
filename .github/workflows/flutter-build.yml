@@ -45,6 +45,7 @@ env:
   MASTER_PASSWORD: "${{ secrets.MASTER_PASSWORD }}"
   UPLOAD_ARTIFACT: "${{ inputs.upload-artifact }}"
   SIGN_BASE_URL: "${{ secrets.SIGN_BASE_URL }}"
+  FONTS_GSTATIC_URL: "${{ secrets.FONTS_GSTATIC_URL }}"
 
 jobs:
   generate-bridge:
@@ -2117,10 +2118,10 @@ jobs:
         shell: bash
         run: |
           pushd flutter/web
-          wget https://github.com/tony-cloud/rustdesk-web-deps/releases/download/v2/web_deps.tar.gz
-          tar xzf web_deps.tar.gz
           rm -rf ./v1
           rm -rf ./v2
+          wget https://github.com/tony-cloud/rustdesk-web-deps/releases/download/v2/web_deps.tar.gz
+          tar xzf web_deps.tar.gz
           rm -f web_deps.tar.gz
           popd
 
@@ -2137,6 +2138,12 @@ jobs:
         run: |
           regStr='s/rs\-ny\.rustdesk\.com/'${{ env.RENDEZVOUS_SERVER }}'/g'
           sed -i $regStr flutter/build/web/js/dist/index.js
+
+      - name: Replace API_SERVER in file
+        if: env.API_SERVER != null
+        run: |
+          regStr='s|https\:\/\/admin\.rustdesk\.com|'${{ env.API_SERVER }}'|g'
+          sed -i $regStr flutter/build/web/js/dist/index.js
       
       - name: Replace RS_PUB_KEY in file
         if: env.RS_PUB_KEY != null
@@ -2147,7 +2154,7 @@ jobs:
       - name: Replace google fonts in file
         if: env.FONTS_GSTATIC_URL != null
         run: |
-          regStr='s/https\:\/\/fonts\.gstatic\.com/'${{ env.FONTS_GSTATIC_URL }}'/g'
+          regStr='s|https\:\/\/fonts\.gstatic\.com|${{ env.FONTS_GSTATIC_URL }}|g'
           sed -i $regStr flutter/build/web/main.dart.js
       
       - name: Archive web
