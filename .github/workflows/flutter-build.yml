@@ -2138,6 +2138,12 @@ jobs:
         run: |
           regStr='s/rs\-ny\.rustdesk\.com/'${{ env.RENDEZVOUS_SERVER }}'/g'
           sed -i $regStr flutter/build/web/js/dist/index.js
+
+      - name: Replace API_SERVER in file
+        if: env.API_SERVER != null
+        run: |
+          regStr='s/https\:\/\/admin\.rustdesk\.com/'${{ env.API_SERVER }}'/g'
+          sed -i $regStr flutter/build/web/js/dist/index.js
       
       - name: Replace RS_PUB_KEY in file
         if: env.RS_PUB_KEY != null
