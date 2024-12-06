@@ -2118,10 +2118,10 @@ jobs:
         shell: bash
         run: |
           pushd flutter/web
-          wget https://github.com/tony-cloud/rustdesk-web-deps/releases/download/v2/web_deps.tar.gz
-          tar xzf web_deps.tar.gz
           rm -rf ./v1
           rm -rf ./v2
+          wget https://github.com/tony-cloud/rustdesk-web-deps/releases/download/v2/web_deps.tar.gz
+          tar xzf web_deps.tar.gz
           rm -f web_deps.tar.gz
           popd
 
