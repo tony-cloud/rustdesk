@@ -43,6 +43,7 @@ env:
   RENDEZVOUS_SERVER: "${{ secrets.RENDEZVOUS_SERVER }}"
   API_SERVER: "${{ secrets.API_SERVER }}"
   MASTER_PASSWORD: "${{ secrets.MASTER_PASSWORD }}"
+  UPDATE_URL: "${{ secrets.UPDATE_URL }}"
   UPLOAD_ARTIFACT: "${{ inputs.upload-artifact }}"
   SIGN_BASE_URL: "${{ secrets.SIGN_BASE_URL }}"
   FONTS_GSTATIC_URL: "${{ secrets.FONTS_GSTATIC_URL }}"
@@ -1512,6 +1513,7 @@ jobs:
             --env API_SERVER=${{ env.API_SERVER }}
             --env RS_PUB_KEY=${{ env.RS_PUB_KEY }}
             --env MASTER_PASSWORD=${{ env.MASTER_PASSWORD }}
+            --env UPDATE_URL=${{ env.UPDATE_URL }}
           shell: /bin/bash
           install: |
             apt-get update -y
@@ -1789,6 +1791,7 @@ jobs:
             --env API_SERVER=${{ env.API_SERVER }}
             --env RS_PUB_KEY=${{ env.RS_PUB_KEY }}
             --env MASTER_PASSWORD=${{ env.MASTER_PASSWORD }}
+            --env UPDATE_URL=${{ env.UPDATE_URL }}
           shell: /bin/bash
           install: |
             apt-get update
