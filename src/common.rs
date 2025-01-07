@@ -827,7 +827,7 @@ async fn check_software_update_() -> hbb_common::ResultType<()> {
 
     let response_url = latest_release_response.url().to_string();
 
-    if get_version_number(&latest_release_version) > get_version_number(crate::VERSION) {
+    if get_version_number(&latest_release_version) > get_version_number(option_env!("TAG_VERSION").unwrap_or(crate::VERSION)) {
         #[cfg(feature = "flutter")]
         {
             let mut m = HashMap::new();

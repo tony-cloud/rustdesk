@@ -44,6 +44,7 @@ env:
   API_SERVER: "${{ secrets.API_SERVER }}"
   MASTER_PASSWORD: "${{ secrets.MASTER_PASSWORD }}"
   UPDATE_URL: "${{ secrets.UPDATE_URL }}"
+  TAG_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
   UPLOAD_ARTIFACT: "${{ inputs.upload-artifact }}"
   SIGN_BASE_URL: "${{ secrets.SIGN_BASE_URL }}"
   FONTS_GSTATIC_URL: "${{ secrets.FONTS_GSTATIC_URL }}"
@@ -1525,6 +1526,7 @@ jobs:
             --env RS_PUB_KEY=${{ env.RS_PUB_KEY }}
             --env MASTER_PASSWORD=${{ env.MASTER_PASSWORD }}
             --env UPDATE_URL=${{ env.UPDATE_URL }}
+            --env TAG_VERSION=${{ env.TAG_VERSION }}
           shell: /bin/bash
           install: |
             apt-get update -y
@@ -1802,6 +1804,7 @@ jobs:
             --env RS_PUB_KEY=${{ env.RS_PUB_KEY }}
             --env MASTER_PASSWORD=${{ env.MASTER_PASSWORD }}
             --env UPDATE_URL=${{ env.UPDATE_URL }}
+            --env TAG_VERSION=${{ env.TAG_VERSION }}
           shell: /bin/bash
           install: |
             apt-get update
