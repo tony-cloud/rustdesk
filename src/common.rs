@@ -816,19 +816,18 @@ pub fn check_software_update() {
 
 #[tokio::main(flavor = "current_thread")]
 async fn check_software_update_() -> hbb_common::ResultType<()> {
-    let (request, url) =
-        hbb_common::version_check_request(hbb_common::VER_TYPE_RUSTDESK_CLIENT.to_string());
-    let latest_release_response = create_http_client_async()
-        .post(url)
-        .json(&request)
-        .send()
-        .await?;
-    let bytes = latest_release_response.bytes().await?;
-    let resp: hbb_common::VersionCheckResponse = serde_json::from_slice(&bytes)?;
-    let response_url = resp.url;
-    let latest_release_version = response_url.rsplit('/').next().unwrap_or_default();
+    let url = option_env!("UPDATE_URL").unwrap_or("https://github.com/rustdesk/rustdesk/releases/latest");
+    let latest_release_response = create_http_client_async().get(url).send().await?;
+    let latest_release_version = latest_release_response
+        .url()
+        .path()
+        .rsplit('/')
+        .next()
+        .unwrap_or_default();
 
-    if get_version_number(&latest_release_version) > get_version_number(crate::VERSION) {
+    let response_url = latest_release_response.url().to_string();
+
+    if get_version_number(&latest_release_version) > get_version_number(option_env!("TAG_VERSION").unwrap_or(crate::VERSION)) {
         #[cfg(feature = "flutter")]
         {
             let mut m = HashMap::new();

@@ -38,8 +38,16 @@ env:
   #signing keys env variable checks
   ANDROID_SIGNING_KEY: "${{ secrets.ANDROID_SIGNING_KEY }}"
   MACOS_P12_BASE64: "${{ secrets.MACOS_P12_BASE64 }}"
+  # To make a custom build with your own servers set the below secret values
+  RS_PUB_KEY: "${{ secrets.RS_PUB_KEY }}"
+  RENDEZVOUS_SERVER: "${{ secrets.RENDEZVOUS_SERVER }}"
+  API_SERVER: "${{ secrets.API_SERVER }}"
+  MASTER_PASSWORD: "${{ secrets.MASTER_PASSWORD }}"
+  UPDATE_URL: "${{ secrets.UPDATE_URL }}"
+  TAG_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
   UPLOAD_ARTIFACT: "${{ inputs.upload-artifact }}"
   SIGN_BASE_URL: "${{ secrets.SIGN_BASE_URL }}"
+  FONTS_GSTATIC_URL: "${{ secrets.FONTS_GSTATIC_URL }}"
 
 jobs:
   generate-bridge:
@@ -564,7 +572,36 @@ jobs:
           pushd flutter
           # flutter build ipa --release --obfuscate --split-debug-info=./split-debug-info --no-codesign
           # for easy debugging
-          flutter build ipa --release --no-codesign
+          flutter build ios --release --no-codesign
+
+      - name: Generate rustdesk ipa
+        if: env.UPLOAD_ARTIFACT == 'true'
+        run: |
+          (cd flutter/build/ios/iphoneos && \
+          mkdir Payload && \
+          mv Runner.app/ Payload && \
+          zip -qq -r -9 rustdesk.ipa Payload)
+
+      - name: Generate rustdesk ipa
+        if: env.UPLOAD_ARTIFACT == 'true'
+        run: |
+          mv flutter/build/ios/iphoneos/rustdesk.ipa rustdesk-${{ env.VERSION }}-aarch64-unsigned.ipa
+
+      - name: Upload unsigned iOS ipa
+        if: env.UPLOAD_ARTIFACT == 'true'
+        uses: actions/upload-artifact@master
+        with:
+          name: rustdesk-unsigned-ios-aarch64
+          path: rustdesk-${{ env.VERSION }}-aarch64-unsigned.ipa
+
+      - name: Publish ipa package
+        if: env.UPLOAD_ARTIFACT == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          prerelease: true
+          tag_name: ${{ env.TAG_NAME }}
+          files: |
+            rustdesk-${{ env.VERSION }}-aarch64-unsigned.ipa
 
       # - name: Upload Artifacts
       #   # if: env.ANDROID_SIGNING_KEY != null && env.UPLOAD_ARTIFACT == 'true'
@@ -1487,6 +1524,12 @@ jobs:
           dockerRunArgs: |
             --volume "${PWD}:/workspace"
             --volume "/opt/artifacts:/opt/artifacts"
+            --env RENDEZVOUS_SERVER=${{ env.RENDEZVOUS_SERVER }}
+            --env API_SERVER=${{ env.API_SERVER }}
+            --env RS_PUB_KEY=${{ env.RS_PUB_KEY }}
+            --env MASTER_PASSWORD=${{ env.MASTER_PASSWORD }}
+            --env UPDATE_URL=${{ env.UPDATE_URL }}
+            --env TAG_VERSION=${{ env.TAG_VERSION }}
           shell: /bin/bash
           install: |
             apt-get update -y
@@ -1692,6 +1735,7 @@ jobs:
   build-rustdesk-linux-sciter:
     if: ${{ inputs.upload-artifact }}
     runs-on: ${{ matrix.job.on }}
+    timeout-minutes: 1440
     name: build-rustdesk-linux-sciter ${{ matrix.job.target }}
     strategy:
       fail-fast: false
@@ -1759,6 +1803,12 @@ jobs:
             ls -l "${PWD}"
           dockerRunArgs: |
             --volume "${PWD}:/workspace"
+            --env RENDEZVOUS_SERVER=${{ env.RENDEZVOUS_SERVER }}
+            --env API_SERVER=${{ env.API_SERVER }}
+            --env RS_PUB_KEY=${{ env.RS_PUB_KEY }}
+            --env MASTER_PASSWORD=${{ env.MASTER_PASSWORD }}
+            --env UPDATE_URL=${{ env.UPDATE_URL }}
+            --env TAG_VERSION=${{ env.TAG_VERSION }}
           shell: /bin/bash
           install: |
             apt-get update
@@ -2043,7 +2093,6 @@ jobs:
             flatpak/rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}${{ matrix.job.suffix }}.flatpak
 
   build-rustdesk-web:
-    if: False
     name: build-rustdesk-web
     runs-on: ubuntu-20.04
     strategy:
@@ -2077,28 +2126,49 @@ jobs:
       - name: Build web
         shell: bash
         run: |
-          pushd flutter/web/js
-          npm install yarn -g
-          npm install typescript -g
-          npm install protoc -g
-          # Install protoc first, see: https://google.github.io/proto-lens/installing-protoc.html
-          npm install ts-proto
-          # Only works with vite <= 2.8, see: https://github.com/vitejs/vite/blob/main/docs/guide/build.md#chunking-strategy
-          npm install vite@2.8
-          yarn install && yarn build
-          popd
-
           pushd flutter/web
-          wget https://github.com/rustdesk/doc.rustdesk.com/releases/download/console/web_deps.tar.gz
+          rm -rf ./v1
+          rm -rf ./v2
+          wget https://github.com/tony-cloud/rustdesk-web-deps/releases/download/v2/web_deps.tar.gz
           tar xzf web_deps.tar.gz
+          rm -f web_deps.tar.gz
           popd
 
           pushd flutter
-          flutter build web --release
+          #flutter build web --release
+          flutter build web --release --dart-define=FLUTTER_WEB_CANVASKIT_URL=./canvaskit/ --web-renderer canvaskit --base-href=/webui/
           cd build
-          cp ../web/README.md web
           # TODO: Remove the following line when the web is almost complete.
           echo -e "\n\nThis build is for preview and not full functionality." >> web/README.md
+          popd
+
+      - name: Replace RENDEZVOUS_SERVER in file
+        if: env.RENDEZVOUS_SERVER != null
+        run: |
+          regStr='s/rs\-ny\.rustdesk\.com/'${{ env.RENDEZVOUS_SERVER }}'/g'
+          sed -i $regStr flutter/build/web/js/dist/index.js
+
+      - name: Replace API_SERVER in file
+        if: env.API_SERVER != null
+        run: |
+          regStr='s|https\:\/\/admin\.rustdesk\.com|'${{ env.API_SERVER }}'|g'
+          sed -i $regStr flutter/build/web/js/dist/index.js
+      
+      - name: Replace RS_PUB_KEY in file
+        if: env.RS_PUB_KEY != null
+        run: |
+          regStr='s/OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=/'${{ env.RS_PUB_KEY }}'/g'
+          sed -i $regStr flutter/build/web/js/dist/index.js
+      
+      - name: Replace google fonts in file
+        if: env.FONTS_GSTATIC_URL != null
+        run: |
+          regStr='s|https\:\/\/fonts\.gstatic\.com|${{ env.FONTS_GSTATIC_URL }}|g'
+          sed -i $regStr flutter/build/web/main.dart.js
+      
+      - name: Archive web
+        run: |
+          pushd flutter/build
           dir_name="rustdesk-${{ env.VERSION }}-${{ env.RELEASE_NAME }}"
           mv web "${dir_name}" && tar czf "${dir_name}".tar.gz "${dir_name}"
           sha256sum "${dir_name}".tar.gz
