@@ -1541,7 +1541,7 @@ pub fn is_empty_uni_link(arg: &str) -> bool {
 }
 
 pub fn get_hwid() -> Bytes {
-    use sha2::{Digest, Sha256};
+    use hbb_common::sha2::{Digest, Sha256};
 
     let uuid = hbb_common::get_uuid();
     let mut hasher = Sha256::new();
