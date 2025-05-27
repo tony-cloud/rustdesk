@@ -10,7 +10,7 @@
      и документацию RustDesk на ваш родной язык. <a href="https://github.com/rustdesk/doc.rustdesk.com">RustDesk Doc</a></b>
 </p>
 
-Общение с нами: [Discord](https://discord.gg/nDceKgxnkV) | [Twitter](https://twitter.com/rustdesk) | [Reddit](https://www.reddit.com/r/rustdesk)
+Общение с нами: [Discord](https://discord.gg/nDceKgxnkV) | [Twitter](https://twitter.com/rustdesk) | [Reddit](https://www.reddit.com/r/rustdesk) | [YouTube](https://www.youtube.com/@rustdesk)
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/I2I04VU09)
 
@@ -147,6 +147,10 @@ target/release/rustdesk
 - **[src/client.rs](https://github.com/rustdesk/rustdesk/tree/master/src/client.rs)**: одноранговое соединение
 - **[src/rendezvous_mediator.rs](https://github.com/rustdesk/rustdesk/tree/master/src/rendezvous_mediator.rs)**: свяжитесь с [rustdesk-server](https://github.com/rustdesk/rustdesk-server), дождитесь удаленного прямого (обход TCP NAT) или ретранслируемого соединения
 - **[src/platform](https://github.com/rustdesk/rustdesk/tree/master/src/platform)**: специфичный для платформы код
+
+> [!Осторожно]
+> **Отказ от ответственности за неправомерное использование:** <br>
+> Разработчики RustDesk не одобряют и не поддерживают какое-либо неэтичное или незаконное использование данного программного обеспечения. Неправомерное использование, такое как несанкционированный доступ, контроль или вторжение в частную жизнь, строго противоречит нашим правилам. Авторы не несут ответственности за любое неправомерное использование приложения.
 
 ## Скриншоты
 
